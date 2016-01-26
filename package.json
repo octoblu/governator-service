@@ -1,0 +1,22 @@
+{
+  "name": "governator-service",
+  "version": "1.0.0",
+  "description": "git@github.com:octoblu/governator-service.git",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/octoblu/governator-service.git"
+  },
+  "keywords": [
+    "governator"
+  ],
+  "author": "Octoblu, Inc.",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/octoblu/governator-service/issues"
+  },
+  "homepage": "https://github.com/octoblu/governator-service#readme"
+}
