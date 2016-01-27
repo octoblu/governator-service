@@ -36,11 +36,15 @@
   "dependencies": {
     "body-parser": "^1.14.2",
     "cmdln": "^3.5.3",
+    "colors": "^1.1.2",
     "dashdash": "^1.12.2",
     "errorhandler": "^1.4.3",
     "express": "^4.13.4",
     "express-meshblu-auth-device": "^1.2.0",
+    "hiredis": "^0.4.1",
+    "meshblu-config": "^3.1.1",
     "morgan": "^1.6.1",
+    "redis": "^2.4.2",
     "schmock": "0.0.5"
   }
 }

@@ -8,6 +8,9 @@ Router  = require './router'
 class Server
   constructor: ({@port,@meshbluConfig,@disableLogging,@client,@deployDelay}) ->
 
+  address: =>
+    @server.address()
+
   run: (callback) =>
     app = express()
     app.use morgan 'dev', immediate: false unless @disableLogging

@@ -1,4 +1,8 @@
-dashdash = require 'dashdash'
+colors         = require 'colors'
+dashdash      = require 'dashdash'
+MeshbluConfig = require 'meshblu-config'
+redis         = require 'redis'
+Server        = require './server'
 
 class Command
   constructor: (@argv) ->
@@ -15,6 +19,13 @@ class Command
       env: 'PORT'
       default: 80
     },
+    {
+      names: ['redis-uri', 'r']
+      type: 'string'
+      help: 'Redis URI (default: redis://localhost:6379)'
+      env: 'REDIS_URI'
+      default: 'redis://localhost:6379'
+    },
   ]
 
   getOptions: =>
@@ -29,13 +40,22 @@ class Command
       process.exit 0
     return options
 
+  getMeshbluConfig: =>
+    meshbluConfig = new MeshbluConfig().toJSON()
+    return @panic new Error('Missing uuid in meshbluConfig') unless meshbluConfig.uuid?
+    meshbluConfig
+
   panic: (error) =>
+    console.error colors.red error.message
     console.error error.stack
     process.exit 1
 
   run: =>
-    {port} = @getOptions()
-    server = new Server {port}
+    {port,redisUri} = @getOptions()
+    meshbluConfig = @getMeshbluConfig()
+
+    client = redis.createClient redisUri
+    server = new Server {port, client}
     server.run (error) =>
       return @panic error if error?
 
