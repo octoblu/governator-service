@@ -6,7 +6,7 @@ meshbluAuthDevice = require 'express-meshblu-auth-device'
 Router  = require './router'
 
 class Server
-  constructor: ({@port,@meshbluConfig,@disableLogging}) ->
+  constructor: ({@port,@meshbluConfig,@disableLogging,@client,@deployDelay}) ->
 
   run: (callback) =>
     app = express()
@@ -16,7 +16,7 @@ class Server
     app.use bodyParser.urlencoded limit: '50mb', extended : true
     app.use bodyParser.json limit : '50mb'
 
-    router = new Router
+    router = new Router {@client, @deployDelay}
     router.route app
 
     @server = app.listen @port, callback
