@@ -1,4 +1,4 @@
 #!/usr/bin/env node
 
 require('coffee-script/register');
-module.export = require('./server.coffee');
+module.exports = require('./src/server.coffee');

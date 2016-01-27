@@ -1,4 +1,6 @@
 #!/usr/bin/env node
 
 require('coffee-script/register');
-module.export = require('./command.coffee');
+var Command = require('./command.coffee');
+var command = new Command(process.argv);
+command.run()

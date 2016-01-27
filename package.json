@@ -26,7 +26,19 @@
     "istanbul": "^0.4.2",
     "mocha": "^2.4.1",
     "mocha-istanbul": "^0.2.0",
+    "request": "^2.67.0",
+    "shmock": "^0.8.1",
     "sinon": "^1.17.2",
     "sinon-chai": "^2.8.0"
+  },
+  "dependencies": {
+    "body-parser": "^1.14.2",
+    "cmdln": "^3.5.3",
+    "dashdash": "^1.12.2",
+    "errorhandler": "^1.4.3",
+    "express": "^4.13.4",
+    "express-meshblu-auth-device": "^1.2.0",
+    "morgan": "^1.6.1",
+    "schmock": "0.0.5"
   }
 }
