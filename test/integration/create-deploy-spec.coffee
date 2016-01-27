@@ -44,7 +44,10 @@ describe 'Create Deploy', ->
           uri: '/deploys'
           baseUrl: 'http://localhost:20000'
           auth: {username: 'governator-uuid', password: 'governator-token'}
-          json: {the: 'stuff i posted', name: 'my-governed-deploy'}
+          json:
+            the: 'stuff i posted'
+            applicationName: 'my-governed-deploy'
+            dockerUrl: 'octoblu/my-governed-deploy:v1'
 
         request.post options, (error, @response, @body) =>
           return done error if error?
@@ -64,9 +67,13 @@ describe 'Create Deploy', ->
       it 'should have metadata in the hash pointed to by the record in the sorted set', (done) ->
         start = Date.now()
         end = Date.now() + 1000
-        @client.hget 'governator:my-governed-deploy', 'request:metadata', (error, record) =>
+        keyName = 'governator:my-governed-deploy:octoblu/my-governed-deploy:v1'
+        @client.hget keyName, 'request:metadata', (error, record) =>
           return done error if error?
-          expect(JSON.parse record).to.deep.equal the: 'stuff i posted', name: 'my-governed-deploy'
+          expect(JSON.parse record).to.deep.equal
+            the: 'stuff i posted'
+            applicationName: 'my-governed-deploy'
+            dockerUrl: 'octoblu/my-governed-deploy:v1'
           done()
 
     describe 'when called with invalid auth', ->

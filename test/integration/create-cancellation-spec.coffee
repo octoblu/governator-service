@@ -45,7 +45,7 @@ describe 'Create Cancellation', ->
             uri: '/cancellations'
             baseUrl: 'http://localhost:20000'
             auth: {username: 'governator-uuid', password: 'governator-token'}
-            json: {the: 'stuff i posted', name: 'my-governed-deploy'}
+            json: {the: 'stuff i posted', applicationName: 'a-deploy', dockerUrl: 'octoblu/a-deploy:v1' }
 
           request.post options, (error, @response, @body) =>
             return done error if error?
@@ -55,7 +55,7 @@ describe 'Create Cancellation', ->
           expect(@response.statusCode).to.equal 201, @body
 
         it 'should set the cancellation metadata', (done) ->
-          @client.hexists 'governator:a-deploy', 'cancellation', (error, exists) =>
+          @client.hexists 'governator:a-deploy:octoblu/a-deploy:v1', 'cancellation', (error, exists) =>
             return done error if error?
             expect(exists).to.equal 1
             done()
