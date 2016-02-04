@@ -1,12 +1,14 @@
 class DeployController
   constructor: ({@client,@deployDelay}) ->
+    throw new Error('client is required') unless @client?
+    throw new Error('deployDelay is required') unless @deployDelay?
 
   create: (request, response) =>
-    deployTime = Date.now() + @deployDelay
-    {applicationName, dockerUrl} = request.body
+    deployTime = (Date.now() / 1000) + @deployDelay
+    {etcdDir, dockerUrl} = request.body
 
     metadata = JSON.stringify request.body
-    metadataLocation = "governator:#{applicationName}:#{dockerUrl}"
+    metadataLocation = "governator:#{etcdDir}:#{dockerUrl}"
     @client.hset metadataLocation, 'request:metadata', metadata, (error) =>
       return response.sendError error if error?
       @client.zadd 'governator:deploys', deployTime, metadataLocation, (error) =>

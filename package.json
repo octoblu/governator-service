@@ -4,6 +4,7 @@
   "description": "git@github.com:octoblu/governator-service.git",
   "main": "index.js",
   "scripts": {
+    "start": "node command.js",
     "test": "istanbul cover _mocha -- -R spec --require coffee-coverage/register-istanbul"
   },
   "repository": {

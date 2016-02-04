@@ -1,12 +1,15 @@
+_                 = require 'lodash'
 express           = require 'express'
 morgan            = require 'morgan'
 errorHandler      = require 'errorhandler'
 bodyParser        = require 'body-parser'
 meshbluAuthDevice = require 'express-meshblu-auth-device'
-Router  = require './router'
+Router            = require './router'
 
 class Server
-  constructor: ({@port,@meshbluConfig,@disableLogging,@client,@deployDelay}) ->
+  constructor: ({@port, @meshbluConfig, @disableLogging, @client, @deployDelay}) ->
+    throw new Error('client is required') unless @client?
+    throw new Error('deployDelay is required') unless @deployDelay?
 
   address: =>
     @server.address()
@@ -20,7 +23,9 @@ class Server
     app.use bodyParser.json limit : '50mb'
     app.use (request, response, next) =>
       response.sendError = (error) =>
-        code = error.code ? 500
+        console.error error.stack
+        code = 500
+        code = error.code if _.isNumber error.code
         return response.sendStatus code unless error.message?
         return response.status(code).send error.message
       next()

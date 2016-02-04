@@ -21,7 +21,7 @@ describe 'Create Deploy', ->
 
     client = redis.createClient @redisKey
 
-    @sut = new Server {port: 20000, disableLogging: true, deployDelay: 1000, meshbluConfig, client}
+    @sut = new Server {port: 20000, disableLogging: true, deployDelay: 1, meshbluConfig, client}
     @sut.run done
 
   afterEach (done) ->
@@ -46,7 +46,7 @@ describe 'Create Deploy', ->
           auth: {username: 'governator-uuid', password: 'governator-token'}
           json:
             the: 'stuff i posted'
-            applicationName: 'my-governed-deploy'
+            etcdDir: '/somedir/my-governed-deploy'
             dockerUrl: 'octoblu/my-governed-deploy:v1'
 
         request.post options, (error, @response, @body) =>
@@ -57,22 +57,20 @@ describe 'Create Deploy', ->
         expect(@response.statusCode).to.equal 201, @body
 
       it 'should add to the sorted set', (done) ->
-        start = Date.now()
-        end = Date.now() + 1000
+        start = (Date.now() / 1000)
+        end = start + 10
         @client.zcount 'governator:deploys', start, end, (error, count) =>
           return done error if error?
           expect(count).to.equal 1
           done()
 
       it 'should have metadata in the hash pointed to by the record in the sorted set', (done) ->
-        start = Date.now()
-        end = Date.now() + 1000
-        keyName = 'governator:my-governed-deploy:octoblu/my-governed-deploy:v1'
+        keyName = 'governator:/somedir/my-governed-deploy:octoblu/my-governed-deploy:v1'
         @client.hget keyName, 'request:metadata', (error, record) =>
           return done error if error?
           expect(JSON.parse record).to.deep.equal
             the: 'stuff i posted'
-            applicationName: 'my-governed-deploy'
+            etcdDir: '/somedir/my-governed-deploy'
             dockerUrl: 'octoblu/my-governed-deploy:v1'
           done()
 

@@ -1,4 +1,4 @@
-colors         = require 'colors'
+colors        = require 'colors'
 dashdash      = require 'dashdash'
 MeshbluConfig = require 'meshblu-config'
 redis         = require 'redis'
@@ -26,6 +26,13 @@ class Command
       env: 'REDIS_URI'
       default: 'redis://localhost:6379'
     },
+    {
+      names: ['deploy-delay', 'd']
+      type: 'integer'
+      help: 'Delay during which the deploy may be cancelled (in seconds)'
+      env: 'DEPLOY_DELAY'
+      default: 10 * 60
+    },
   ]
 
   getOptions: =>
@@ -51,11 +58,11 @@ class Command
     process.exit 1
 
   run: =>
-    {port,redisUri} = @getOptions()
+    {port,redis_uri,deploy_delay} = @getOptions()
     meshbluConfig = @getMeshbluConfig()
 
-    client = redis.createClient redisUri
-    server = new Server {port, client}
+    client = redis.createClient redis_uri
+    server = new Server {port, client, meshbluConfig, deployDelay: deploy_delay}
     server.run (error) =>
       return @panic error if error?
 
