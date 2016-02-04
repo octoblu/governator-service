@@ -7,9 +7,10 @@ meshbluAuthDevice = require 'express-meshblu-auth-device'
 Router            = require './router'
 
 class Server
-  constructor: ({@port, @meshbluConfig, @disableLogging, @client, @deployDelay}) ->
+  constructor: ({@port, @meshbluConfig, @disableLogging, @client, @deployDelay, @redisQueue}) ->
     throw new Error('client is required') unless @client?
     throw new Error('deployDelay is required') unless @deployDelay?
+    throw new Error('redisQueue is required') unless @redisQueue?
 
   address: =>
     @server.address()
@@ -30,7 +31,7 @@ class Server
         return response.status(code).send error.message
       next()
 
-    router = new Router {@client, @deployDelay}
+    router = new Router {@client, @deployDelay, @redisQueue}
     router.route app
 
     @server = app.listen @port, callback

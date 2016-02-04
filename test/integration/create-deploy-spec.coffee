@@ -21,7 +21,14 @@ describe 'Create Deploy', ->
 
     client = redis.createClient @redisKey
 
-    @sut = new Server {port: 20000, disableLogging: true, deployDelay: 1, meshbluConfig, client}
+    @sut = new Server {
+      meshbluConfig: meshbluConfig
+      client: client
+      port: 20000
+      disableLogging: true
+      deployDelay: 1
+      redisQueue: 'governator:deploys'
+    }
     @sut.run done
 
   afterEach (done) ->

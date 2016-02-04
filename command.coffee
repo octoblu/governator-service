@@ -27,6 +27,13 @@ class Command
       default: 'redis://localhost:6379'
     },
     {
+      names: ['redis-queue', 'q']
+      type: 'string'
+      help: 'Redis Queue (default: governator:request)'
+      env: 'REDIS_URI'
+      default: 'redis://localhost:6379'
+    },
+    {
       names: ['deploy-delay', 'd']
       type: 'integer'
       help: 'Delay during which the deploy may be cancelled (in seconds)'
@@ -58,11 +65,11 @@ class Command
     process.exit 1
 
   run: =>
-    {port,redis_uri,deploy_delay} = @getOptions()
+    {port,redis_uri,redis_queue,deploy_delay} = @getOptions()
     meshbluConfig = @getMeshbluConfig()
 
     client = redis.createClient redis_uri
-    server = new Server {port, client, meshbluConfig, deployDelay: deploy_delay}
+    server = new Server {port, client, meshbluConfig, deployDelay: deploy_delay, redisQueue: redis_queue}
     server.run (error) =>
       return @panic error if error?
 

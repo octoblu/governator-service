@@ -21,7 +21,14 @@ describe 'Create Cancellation', ->
 
     client = redis.createClient @redisKey
 
-    @sut = new Server {port: 20000, disableLogging: false, deployDelay: 0, meshbluConfig, client}
+    @sut = new Server {
+      client: client
+      meshbluConfig: meshbluConfig
+      port: 20000
+      disableLogging: false
+      deployDelay: 0
+      redisQueue: 'governator:deploys'
+    }
     @sut.run done
 
   afterEach (done) ->
