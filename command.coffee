@@ -30,7 +30,7 @@ class Command
       names: ['redis-queue', 'q']
       type: 'string'
       help: 'Redis Queue (default: governator:request)'
-      env: 'REDIS_URI'
+      env: 'REDIS_QUEUE'
       default: 'redis://localhost:6379'
     },
     {
