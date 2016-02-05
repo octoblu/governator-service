@@ -4,6 +4,7 @@ morgan            = require 'morgan'
 errorHandler      = require 'errorhandler'
 bodyParser        = require 'body-parser'
 meshbluAuthDevice = require 'express-meshblu-auth-device'
+meshbluHealthcheck = require 'express-meshblu-healthcheck'
 Router            = require './router'
 
 class Server
@@ -17,6 +18,7 @@ class Server
 
   run: (callback) =>
     app = express()
+    app.use meshbluHealthcheck()
     app.use morgan 'dev', immediate: false unless @disableLogging
     app.use errorHandler()
     app.use meshbluAuthDevice(@meshbluConfig)
