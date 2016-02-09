@@ -8,6 +8,9 @@ class DeploymentsController
     deployTime = (Date.now() / 1000) + @deployDelay
     {etcdDir, dockerUrl} = request.body
 
+    unless etcdDir && dockerUrl
+      return response.status(422).send error: "Missing etcdDir or dockerUrl, received: '#{JSON.stringify request.body}'"
+
     metadata = JSON.stringify request.body
     metadataLocation = "governator:#{etcdDir}:#{dockerUrl}"
     @client.hset metadataLocation, 'request:metadata', metadata, (error) =>
