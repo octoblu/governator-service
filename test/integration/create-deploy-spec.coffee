@@ -37,7 +37,7 @@ describe 'Create Deploy', ->
   afterEach (done) ->
     @meshbluServer.close done
 
-  describe 'POST /deploys', ->
+  describe 'POST /deployments', ->
     describe 'when called with valid auth', ->
       beforeEach (done) ->
         governatorAuth = new Buffer('governator-uuid:governator-token').toString 'base64'
@@ -48,7 +48,7 @@ describe 'Create Deploy', ->
           .reply 200, uuid: 'governator-uuid'
 
         options =
-          uri: '/deploys'
+          uri: '/deployments'
           baseUrl: 'http://localhost:20000'
           auth: {username: 'governator-uuid', password: 'governator-token'}
           json:
@@ -91,7 +91,7 @@ describe 'Create Deploy', ->
           .reply 403
 
         options =
-          uri: '/deploys'
+          uri: '/deployments'
           baseUrl: 'http://localhost:20000'
           auth: {username: 'wrong-uuid', password: 'wrong-token'}
 
@@ -113,7 +113,7 @@ describe 'Create Deploy', ->
           .reply 200, uuid: 'wrong-uuid'
 
         options =
-          uri: '/deploys'
+          uri: '/deployments'
           baseUrl: 'http://localhost:20000'
           auth: {username: 'wrong-uuid', password: 'wrong-token'}
 

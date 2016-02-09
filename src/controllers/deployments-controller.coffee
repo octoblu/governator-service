@@ -1,4 +1,4 @@
-class DeployController
+class DeploymentsController
   constructor: ({@client,@deployDelay,@redisQueue}) ->
     throw new Error('client is required') unless @client?
     throw new Error('deployDelay is required') unless @deployDelay?
@@ -16,4 +16,4 @@ class DeployController
         return response.sendError error if error?
         response.sendStatus 201
 
-module.exports = DeployController
+module.exports = DeploymentsController

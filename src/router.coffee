@@ -1,4 +1,4 @@
-DeployController = require './controllers/deploy-controller'
+DeploymentsController = require './controllers/deployments-controller'
 CancellationController = require './controllers/cancellation-controller'
 
 class Router
@@ -7,11 +7,11 @@ class Router
     throw new Error('deployDelay is required') unless deployDelay?
     throw new Error('redisQueue is required') unless redisQueue?
 
-    @deployController = new DeployController {client, deployDelay, redisQueue}
+    @deploymentsController = new DeploymentsController {client, deployDelay, redisQueue}
     @cancellationController = new CancellationController {client}
 
   route: (app) =>
-    app.post '/deploys', @deployController.create
+    app.post '/deployments', @deploymentsController.create
     app.post '/cancellations', @cancellationController.create
 
 module.exports = Router
