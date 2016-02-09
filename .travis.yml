@@ -1,7 +1,14 @@
 language: node_js
 node_js:
 - '5'
+env:
+  - CXX=g++-4.8
 addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.8
   code_climate:
     repo_token: d6528e52cb8b0f130bb67c28d5a4db20ea478faf3d8debc2d5121e8e8c9820bf
 before_script:
