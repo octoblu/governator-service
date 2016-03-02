@@ -22,7 +22,7 @@ class StatusController
 
         callback null, {
           key: key
-          deployAt: score
+          deployAt: parseInt(score)
           status: status
         }
 
