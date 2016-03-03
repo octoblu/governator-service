@@ -71,6 +71,13 @@ describe 'Create Deploy', ->
           expect(count).to.equal 1
           done()
 
+      it 'should have set a ttl', (done) ->
+        keyName = 'governator:/somedir/my-governed-deploy:octoblu/my-governed-deploy:v1'
+        @client.ttl keyName, (error, ttl) =>
+          return done error if error?
+          expect(ttl).to.be.greaterThan 0
+          done()
+
       it 'should have metadata in the hash pointed to by the record in the sorted set', (done) ->
         keyName = 'governator:/somedir/my-governed-deploy:octoblu/my-governed-deploy:v1'
         @client.hget keyName, 'request:metadata', (error, record) =>

@@ -61,6 +61,13 @@ describe 'Create Cancellation', ->
         it 'should return a 201', ->
           expect(@response.statusCode).to.equal 201, @body
 
+        it 'should have set a ttl', (done) ->
+          keyName = 'governator:/dir/a-deploy:octoblu/a-deploy:v1'
+          @client.ttl keyName, (error, ttl) =>
+            return done error if error?
+            expect(ttl).to.be.greaterThan 0
+            done()
+
         it 'should set the cancellation metadata', (done) ->
           @client.hexists 'governator:/dir/a-deploy:octoblu/a-deploy:v1', 'cancellation', (error, exists) =>
             return done error if error?
