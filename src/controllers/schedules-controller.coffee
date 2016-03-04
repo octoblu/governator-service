@@ -11,8 +11,11 @@ class SchedulesController
 
     metadata = JSON.stringify request.body
     metadataLocation = "governator:#{etcdDir}:#{dockerUrl}"
-    @client.zadd @redisQueue, deployAt, metadataLocation, (error) =>
+    @client.exists metadataLocation, (error, exists) =>
       return response.sendError error if error?
-      response.sendStatus 201
+      return response.sendStatus(404) unless exists
+      @client.zadd @redisQueue, deployAt, metadataLocation, (error) =>
+        return response.sendError error if error?
+        response.sendStatus 201
 
 module.exports = SchedulesController
