@@ -38,7 +38,10 @@ describe 'Create Schedule', ->
     @meshbluServer.close done
 
   describe 'POST /schedules', ->
-    describe 'when called with valid auth', ->
+    describe 'when exists', ->
+      beforeEach (done) ->
+        @client.set 'governator:/somedir/my-governed-deploy:octoblu/my-governed-deploy:v1', '', done
+
       beforeEach (done) ->
         governatorAuth = new Buffer('governator-uuid:governator-token').toString 'base64'
 
@@ -68,6 +71,34 @@ describe 'Create Schedule', ->
           return done error if error?
           expect(rank).to.equal 550959
           done()
+
+    describe 'when does not exist', ->
+      beforeEach (done) ->
+        @client.del 'governator:/somedir/my-governed-deploy:octoblu/my-governed-deploy:v1', done
+
+      beforeEach (done) ->
+        governatorAuth = new Buffer('governator-uuid:governator-token').toString 'base64'
+
+        @meshbluServer
+          .get '/v2/whoami'
+          .set 'Authorization', "Basic #{governatorAuth}"
+          .reply 200, uuid: 'governator-uuid'
+
+        options =
+          uri: '/schedules'
+          baseUrl: 'http://localhost:20000'
+          auth: {username: 'governator-uuid', password: 'governator-token'}
+          json:
+            etcdDir: '/somedir/my-governed-deploy'
+            dockerUrl: 'octoblu/my-governed-deploy:v1'
+            deployAt: 550959
+
+        request.post options, (error, @response, @body) =>
+          return done error if error?
+          done()
+
+      it 'should return a 404', ->
+        expect(@response.statusCode).to.equal 404, @body
 
     describe 'when called with invalid auth', ->
       beforeEach (done) ->
