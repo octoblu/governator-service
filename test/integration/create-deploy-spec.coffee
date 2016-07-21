@@ -1,12 +1,14 @@
-request = require 'request'
-shmock  = require 'shmock'
-redis   = require 'fakeredis'
-UUID    = require 'uuid'
-Server  = require '../../server'
+request       = require 'request'
+shmock        = require 'shmock'
+redis         = require 'fakeredis'
+enableDestroy = require 'server-destroy'
+UUID          = require 'uuid'
+Server        = require '../../server'
 
 describe 'Create Deploy', ->
   beforeEach ->
     @meshbluServer = shmock 30000
+    enableDestroy @meshbluServer
 
   beforeEach ->
     @redisKey = UUID.v1()
@@ -31,11 +33,9 @@ describe 'Create Deploy', ->
     }
     @sut.run done
 
-  afterEach (done) ->
-    @sut.stop done
-
-  afterEach (done) ->
-    @meshbluServer.close done
+  afterEach ->
+    @sut.destroy()
+    @meshbluServer.destroy()
 
   describe 'POST /deployments', ->
     describe 'when called with valid auth', ->

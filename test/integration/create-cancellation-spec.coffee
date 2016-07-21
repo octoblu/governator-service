@@ -1,12 +1,14 @@
-request = require 'request'
-shmock  = require 'shmock'
-redis   = require 'fakeredis'
-UUID    = require 'uuid'
-Server  = require '../../server'
+request       = require 'request'
+shmock        = require 'shmock'
+redis         = require 'fakeredis'
+enableDestroy = require 'server-destroy'
+UUID          = require 'uuid'
+Server        = require '../../server'
 
 describe 'Create Cancellation', ->
   beforeEach ->
     @meshbluServer = shmock 30000
+    enableDestroy @meshbluServer
 
   beforeEach ->
     @redisKey = UUID.v1()
@@ -25,17 +27,15 @@ describe 'Create Cancellation', ->
       client: client
       meshbluConfig: meshbluConfig
       port: 20000
-      disableLogging: false
+      disableLogging: true
       deployDelay: 0
       redisQueue: 'governator:deploys'
     }
     @sut.run done
 
-  afterEach (done) ->
-    @sut.stop done
-
-  afterEach (done) ->
-    @meshbluServer.close done
+  afterEach ->
+    @sut.destroy()
+    @meshbluServer.destroy()
 
   describe 'POST /cancellations', ->
     describe 'when called with valid auth', ->

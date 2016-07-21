@@ -1,11 +1,14 @@
 colors        = require 'colors'
 dashdash      = require 'dashdash'
+OctobluRaven  = require 'octoblu-raven'
 MeshbluConfig = require 'meshblu-config'
 redis         = require 'redis'
 Server        = require './server'
 
 class Command
   constructor: (@argv) ->
+    @octobluRaven = new OctobluRaven
+
   @OPTIONS: [
     {
       names: ['help', 'h']
@@ -64,12 +67,15 @@ class Command
     console.error error.stack
     process.exit 1
 
+  catchErrors: =>
+    @octobluRaven.patchGlobal()
+
   run: =>
     {port,redis_uri,redis_queue,deploy_delay} = @getOptions()
     meshbluConfig = @getMeshbluConfig()
 
     client = redis.createClient redis_uri
-    server = new Server {port, client, meshbluConfig, deployDelay: deploy_delay, redisQueue: redis_queue}
+    server = new Server {port, client, meshbluConfig, deployDelay: deploy_delay, redisQueue: redis_queue, @octobluRaven}
     server.run (error) =>
       return @panic error if error?
 
