@@ -1,3 +1,5 @@
+debug = require('debug')('governator-service:deployments-controller')
+
 class DeploymentsController
   constructor: ({@client,@deployDelay,@redisQueue}) ->
     throw new Error('client is required') unless @client?
@@ -7,6 +9,7 @@ class DeploymentsController
   create: (request, response) =>
     deployTime = (Date.now() / 1000) + @deployDelay
     {etcdDir, dockerUrl} = request.body
+    debug 'deployment:', {etcdDir, dockerUrl}
 
     unless etcdDir && dockerUrl
       return response.status(422).send error: "Missing etcdDir or dockerUrl, received: '#{JSON.stringify request.body}'"
