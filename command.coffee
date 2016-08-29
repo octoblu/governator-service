@@ -1,3 +1,4 @@
+_             = require 'lodash'
 colors        = require 'colors'
 dashdash      = require 'dashdash'
 OctobluRaven  = require 'octoblu-raven'
@@ -21,6 +22,13 @@ class Command
       help: 'Port for the server to listen on'
       env: 'PORT'
       default: 80
+    },
+    {
+      names: ['required-clusters', 'c']
+      type: 'string'
+      help: 'The required clusters in other to run. Separated by commas.'
+      env: 'REQUIRED_CLUSTERS'
+      default: 'minor'
     },
     {
       names: ['redis-uri', 'r']
@@ -71,11 +79,19 @@ class Command
     @octobluRaven.patchGlobal()
 
   run: =>
-    {port,redis_uri,redis_queue,deploy_delay} = @getOptions()
+    {port,required_clusters,redis_uri,redis_queue,deploy_delay} = @getOptions()
     meshbluConfig = @getMeshbluConfig()
 
     client = new Redis redis_uri, dropBufferSupport: true
-    server = new Server {port, client, meshbluConfig, deployDelay: deploy_delay, redisQueue: redis_queue, @octobluRaven}
+    server = new Server {
+      port,
+      client,
+      meshbluConfig,
+      requiredClusters: required_clusters.split(',').map(_.trim),
+      deployDelay: deploy_delay,
+      redisQueue: redis_queue,
+      @octobluRaven
+    }
     server.run (error) =>
       return @panic error if error?
 

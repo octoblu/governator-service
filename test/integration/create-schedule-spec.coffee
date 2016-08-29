@@ -30,6 +30,7 @@ describe 'Create Schedule', ->
       disableLogging: true
       deployDelay: 1
       redisQueue: 'governator:deploys'
+      requiredClusters: ['minor']
     }
     @sut.run done
 

@@ -14,10 +14,14 @@ DeployService      = require './services/deploy-service'
 Router             = require './router'
 
 class Server
-  constructor: ({@port, @meshbluConfig, @disableLogging, @client, @deployDelay, @redisQueue, @octobluRaven}) ->
+  constructor: (options) ->
+    { @port, @meshbluConfig, @disableLogging } = options
+    { @client, @deployDelay, @redisQueue,  } = options
+    { @requiredClusters, @octobluRaven } = options
     throw new Error('client is required') unless @client?
     throw new Error('deployDelay is required') unless @deployDelay?
     throw new Error('redisQueue is required') unless @redisQueue?
+    throw new Error('requiredClusters is required') unless @requiredClusters?
     @octobluRaven ?= new OctobluRaven
 
   address: =>
@@ -46,7 +50,7 @@ class Server
       next()
 
     deployService = new DeployService { @client, @deployDelay, @redisQueue }
-    router = new Router { deployService }
+    router = new Router { deployService, @requiredClusters }
     router.route app
 
     @server = app.listen @port, callback

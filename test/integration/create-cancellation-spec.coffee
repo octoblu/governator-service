@@ -30,6 +30,7 @@ describe 'Create Cancellation', ->
       disableLogging: true
       deployDelay: 0
       redisQueue: 'governator:deploys'
+      requiredClusters: ['minor']
     }
     @sut.run done
 

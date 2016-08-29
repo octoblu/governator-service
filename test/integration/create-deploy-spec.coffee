@@ -30,6 +30,7 @@ describe 'Create Deploy', ->
       disableLogging: true
       deployDelay: 1
       redisQueue: 'governator:deploys'
+      requiredClusters: ['minor']
     }
     @sut.run done
 
