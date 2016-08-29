@@ -9,6 +9,8 @@ sendError          = require 'express-send-error'
 expressVersion     = require 'express-package-version'
 meshbluAuthDevice  = require 'express-meshblu-auth-device'
 meshbluHealthcheck = require 'express-meshblu-healthcheck'
+
+DeployService      = require './services/deploy-service'
 Router             = require './router'
 
 class Server
@@ -30,7 +32,7 @@ class Server
     app.use expressVersion({format: '{"version": "%s"}'})
     skip = (request, response) =>
       return response.statusCode < 400
-    app.use morgan 'dev', { immediate: false, skip }
+    app.use morgan 'dev', { immediate: false, skip } unless @disableLogging
     app.use meshbluAuthDevice(@meshbluConfig)
     app.use bodyParser.urlencoded limit: '50mb', extended : true
     app.use bodyParser.json limit : '50mb'
@@ -43,7 +45,8 @@ class Server
         return response.status(code).send error.message
       next()
 
-    router = new Router {@client, @deployDelay, @redisQueue}
+    deployService = new DeployService { @client, @deployDelay, @redisQueue }
+    router = new Router { deployService }
     router.route app
 
     @server = app.listen @port, callback

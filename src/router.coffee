@@ -1,18 +1,16 @@
-DeploymentsController = require './controllers/deployments-controller'
+DeploymentsController  = require './controllers/deployments-controller'
 CancellationController = require './controllers/cancellation-controller'
-SchedulesController = require './controllers/schedules-controller'
-StatusController = require './controllers/status-controller'
+SchedulesController    = require './controllers/schedules-controller'
+StatusController       = require './controllers/status-controller'
 
 class Router
-  constructor: ({client, deployDelay, redisQueue}) ->
-    throw new Error('client is required') unless client?
-    throw new Error('deployDelay is required') unless deployDelay?
-    throw new Error('redisQueue is required') unless redisQueue?
+  constructor: ({ deployService }) ->
+    throw new Error('deployService is required') unless deployService?
 
-    @deploymentsController = new DeploymentsController {client, deployDelay, redisQueue}
-    @cancellationController = new CancellationController {client}
-    @schedulesController = new SchedulesController {client, redisQueue}
-    @statusController = new StatusController {client, redisQueue}
+    @deploymentsController = new DeploymentsController { deployService }
+    @cancellationController = new CancellationController { deployService }
+    @schedulesController = new SchedulesController  { deployService }
+    @statusController = new StatusController  { deployService }
 
   route: (app) =>
     app.post '/deployments', @deploymentsController.create
