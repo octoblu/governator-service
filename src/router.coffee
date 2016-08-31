@@ -16,7 +16,6 @@ class Router
     @statusController = new StatusController  { deployService }
 
   route: (app) =>
-    app.post '/v2/deployments', @deployStateController.create
     app.put  '/v2/deployments', @deployStateController.update
     app.post '/deployments', @deploymentsController.create
     app.post '/cancellations', @cancellationController.create

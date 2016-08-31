@@ -57,16 +57,14 @@ describe 'Create Deploy', ->
             etcdDir: '/somedir/my-governed-deploy'
             dockerUrl: 'octoblu/my-governed-deploy:v1'
 
-        request.post options, (error, @response, @body) =>
-          return done error if error?
-          done()
+        request.post options, (error, @response, @body) => done error
 
       it 'should return a 201', ->
         expect(@response.statusCode).to.equal 201, @body
 
       it 'should add to the sorted set', (done) ->
-        start = (Date.now() / 1000)
-        end = start + 10
+        start = (Date.now() / 1000) - 5
+        end = start + 15
         @client.zcount 'governator:deploys', start, end, (error, count) =>
           return done error if error?
           expect(count).to.equal 1

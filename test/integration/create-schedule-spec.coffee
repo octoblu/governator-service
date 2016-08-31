@@ -1,8 +1,8 @@
-request       = require 'request'
+UUID          = require 'uuid'
 shmock        = require 'shmock'
+request       = require 'request'
 redis         = require 'fakeredis'
 enableDestroy = require 'server-destroy'
-UUID          = require 'uuid'
 Server        = require '../../server'
 
 describe 'Create Schedule', ->
@@ -23,6 +23,8 @@ describe 'Create Schedule', ->
 
     client = redis.createClient @redisKey
 
+    @logFn = sinon.spy()
+
     @sut = new Server {
       meshbluConfig: meshbluConfig
       client: client
@@ -31,6 +33,7 @@ describe 'Create Schedule', ->
       deployDelay: 1
       redisQueue: 'governator:deploys'
       requiredClusters: ['minor']
+      @logFn
     }
     @sut.run done
 
@@ -68,7 +71,8 @@ describe 'Create Schedule', ->
         expect(@response.statusCode).to.equal 201, @body
 
       it 'should update the sorted set', (done) ->
-        @client.zscore 'governator:deploys', 'governator:/somedir/my-governed-deploy:octoblu/my-governed-deploy:v1', (error, rank) =>
+        keyName = 'governator:/somedir/my-governed-deploy:octoblu/my-governed-deploy:v1'
+        @client.zscore 'governator:deploys', keyName, (error, rank) =>
           return done error if error?
           expect(rank).to.equal 550959
           done()
@@ -95,8 +99,7 @@ describe 'Create Schedule', ->
             deployAt: 550959
 
         request.post options, (error, @response, @body) =>
-          return done error if error?
-          done()
+          done error
 
       it 'should return a 404', ->
         expect(@response.statusCode).to.equal 404, @body

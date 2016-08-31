@@ -1,14 +1,12 @@
 _             = require 'lodash'
 colors        = require 'colors'
 dashdash      = require 'dashdash'
-OctobluRaven  = require 'octoblu-raven'
 MeshbluConfig = require 'meshblu-config'
 Redis         = require 'ioredis'
 Server        = require './server'
 
 class Command
   constructor: (@argv) ->
-    @octobluRaven = new OctobluRaven
 
   @OPTIONS: [
     {
@@ -75,9 +73,6 @@ class Command
     console.error error.stack
     process.exit 1
 
-  catchErrors: =>
-    @octobluRaven.patchGlobal()
-
   run: =>
     {port,required_clusters,redis_uri,redis_queue,deploy_delay} = @getOptions()
     meshbluConfig = @getMeshbluConfig()
@@ -90,7 +85,6 @@ class Command
       requiredClusters: required_clusters.split(',').map(_.trim),
       deployDelay: deploy_delay,
       redisQueue: redis_queue,
-      @octobluRaven
     }
     server.run (error) =>
       return @panic error if error?
@@ -100,7 +94,7 @@ class Command
 
     process.on 'SIGTERM', =>
       console.log 'SIGTERM caught, exiting'
-      server.stop =>
+      server?.stop =>
         process.exit 0
 
       setTimeout =>

@@ -6,9 +6,6 @@ class DeployStateController
     throw new Error 'deployService is required' unless @deployService?
     throw new Error 'requiredClusters is required' unless @requiredClusters?
 
-  create: (request, response) =>
-    response.sendStatus 201
-
   update: (request, response) =>
     { repo, owner, build, cluster } = request.body
     debug 'update', request.body
