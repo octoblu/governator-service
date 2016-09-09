@@ -59,11 +59,11 @@ describe 'Update Deploy State', ->
               baseUrl: 'http://localhost:20000'
               auth: {username: 'governator-uuid', password: 'governator-token'}
               json:
-                repo: 'somedir'
-                owner: 'my-governed-deploy'
+                repo: 'my-service'
+                owner: 'octoblu'
                 build:
                   passing: true
-                  dockerUrl: 'octoblu/my-governed-deploy:v1'
+                  dockerUrl: 'octoblu/my-service:v1'
 
             request.put options, (error, @response, @body) =>
               return done error if error?
@@ -81,19 +81,19 @@ describe 'Update Deploy State', ->
               done()
 
           it 'should have set a ttl', (done) ->
-            keyName = 'governator:/somedir/my-governed-deploy:octoblu/my-governed-deploy:v1'
+            keyName = 'governator:/octoblu/my-service:octoblu/my-service:v1'
             @client.ttl keyName, (error, ttl) =>
               return done error if error?
               expect(ttl).to.be.greaterThan 0
               done()
 
           it 'should have metadata in the hash pointed to by the record in the sorted set', (done) ->
-            keyName = 'governator:/somedir/my-governed-deploy:octoblu/my-governed-deploy:v1'
+            keyName = 'governator:/octoblu/my-service:octoblu/my-service:v1'
             @client.hget keyName, 'request:metadata', (error, record) =>
               return done error if error?
               expect(JSON.parse record).to.deep.equal
-                etcdDir: '/somedir/my-governed-deploy'
-                dockerUrl: 'octoblu/my-governed-deploy:v1'
+                etcdDir: '/octoblu/my-service'
+                dockerUrl: 'octoblu/my-service:v1'
               done()
 
         describe 'when called with a failing build', ->
@@ -110,11 +110,11 @@ describe 'Update Deploy State', ->
               baseUrl: 'http://localhost:20000'
               auth: {username: 'governator-uuid', password: 'governator-token'}
               json:
-                repo: 'somedir'
-                owner: 'my-governed-deploy'
+                repo: 'my-service'
+                owner: 'octoblu'
                 build:
                   passing: false
-                  dockerUrl: 'octoblu/my-governed-deploy:v1'
+                  dockerUrl: 'octoblu/my-service:v1'
 
             request.put options, (error, @response, @body) =>
               return done error if error?
@@ -145,8 +145,8 @@ describe 'Update Deploy State', ->
               baseUrl: 'http://localhost:20000'
               auth: {username: 'governator-uuid', password: 'governator-token'}
               json:
-                repo: 'somedir'
-                owner: 'my-governed-deploy'
+                repo: 'my-service'
+                owner: 'octoblu'
                 build:
                   passing: true
 
@@ -179,11 +179,11 @@ describe 'Update Deploy State', ->
               baseUrl: 'http://localhost:20000'
               auth: {username: 'governator-uuid', password: 'governator-token'}
               json:
-                repo: 'somedir'
-                owner: 'my-governed-deploy'
+                repo: 'my-service'
+                owner: 'octoblu'
                 build:
                   passing: true
-                  dockerUrl: 'octoblu/my-governed-deploy:v1'
+                  dockerUrl: 'octoblu/my-service:v1'
                 cluster: {}
 
             request.put options, (error, @response, @body) =>
@@ -202,19 +202,19 @@ describe 'Update Deploy State', ->
               done()
 
           it 'should have set a ttl', (done) ->
-            keyName = 'governator:/somedir/my-governed-deploy:octoblu/my-governed-deploy:v1'
+            keyName = 'governator:/octoblu/my-service:octoblu/my-service:v1'
             @client.ttl keyName, (error, ttl) =>
               return done error if error?
               expect(ttl).to.be.greaterThan 0
               done()
 
           it 'should have metadata in the hash pointed to by the record in the sorted set', (done) ->
-            keyName = 'governator:/somedir/my-governed-deploy:octoblu/my-governed-deploy:v1'
+            keyName = 'governator:/octoblu/my-service:octoblu/my-service:v1'
             @client.hget keyName, 'request:metadata', (error, record) =>
               return done error if error?
               expect(JSON.parse record).to.deep.equal
-                etcdDir: '/somedir/my-governed-deploy'
-                dockerUrl: 'octoblu/my-governed-deploy:v1'
+                etcdDir: '/octoblu/my-service'
+                dockerUrl: 'octoblu/my-service:v1'
               done()
 
         describe 'when called with a failing cluster requirement', ->
@@ -231,11 +231,11 @@ describe 'Update Deploy State', ->
               baseUrl: 'http://localhost:20000'
               auth: {username: 'governator-uuid', password: 'governator-token'}
               json:
-                repo: 'somedir'
-                owner: 'my-governed-deploy'
+                repo: 'my-service'
+                owner: 'octoblu'
                 build:
                   passing: true
-                  dockerUrl: 'octoblu/my-governed-deploy:v1'
+                  dockerUrl: 'octoblu/my-service:v1'
                 cluster:
                   minor:
                     passing: false
@@ -256,7 +256,7 @@ describe 'Update Deploy State', ->
               done()
 
           it 'should have metadata in the hash pointed to by the record in the sorted set', (done) ->
-            keyName = 'governator:/somedir/my-governed-deploy:octoblu/my-governed-deploy:v1'
+            keyName = 'governator:/octoblu/my-service:octoblu/my-service:v1'
             @client.hget keyName, 'request:metadata', (error, record) =>
               return done error if error?
               expect(record).to.not.exist
@@ -265,8 +265,8 @@ describe 'Update Deploy State', ->
       describe 'when called with an existing deployment', ->
         beforeEach (done) ->
           @deployService.create {
-            etcdDir: '/somedir/my-governed-deploy'
-            dockerUrl: 'octoblu/my-governed-deploy:v1'
+            etcdDir: '/octoblu/my-service'
+            dockerUrl: 'octoblu/my-service:v1'
           }, (error) =>
             done error
 
@@ -284,11 +284,11 @@ describe 'Update Deploy State', ->
               baseUrl: 'http://localhost:20000'
               auth: {username: 'governator-uuid', password: 'governator-token'}
               json:
-                repo: 'somedir'
-                owner: 'my-governed-deploy'
+                repo: 'my-service'
+                owner: 'octoblu'
                 build:
                   passing: true
-                  dockerUrl: 'octoblu/my-governed-deploy:v1'
+                  dockerUrl: 'octoblu/my-service:v1'
                 cluster: {}
 
             request.put options, (error, @response, @body) =>
@@ -307,19 +307,19 @@ describe 'Update Deploy State', ->
               done()
 
           it 'should have set a ttl', (done) ->
-            keyName = 'governator:/somedir/my-governed-deploy:octoblu/my-governed-deploy:v1'
+            keyName = 'governator:/octoblu/my-service:octoblu/my-service:v1'
             @client.ttl keyName, (error, ttl) =>
               return done error if error?
               expect(ttl).to.be.greaterThan 0
               done()
 
           it 'should have metadata in the hash pointed to by the record in the sorted set', (done) ->
-            keyName = 'governator:/somedir/my-governed-deploy:octoblu/my-governed-deploy:v1'
+            keyName = 'governator:/octoblu/my-service:octoblu/my-service:v1'
             @client.hget keyName, 'request:metadata', (error, record) =>
               return done error if error?
               expect(JSON.parse record).to.deep.equal
-                etcdDir: '/somedir/my-governed-deploy'
-                dockerUrl: 'octoblu/my-governed-deploy:v1'
+                etcdDir: '/octoblu/my-service'
+                dockerUrl: 'octoblu/my-service:v1'
               done()
 
         describe 'when called with a failing cluster requirement', ->
@@ -336,11 +336,11 @@ describe 'Update Deploy State', ->
               baseUrl: 'http://localhost:20000'
               auth: {username: 'governator-uuid', password: 'governator-token'}
               json:
-                repo: 'somedir'
-                owner: 'my-governed-deploy'
+                repo: 'my-service'
+                owner: 'octoblu'
                 build:
                   passing: true
-                  dockerUrl: 'octoblu/my-governed-deploy:v1'
+                  dockerUrl: 'octoblu/my-service:v1'
                 cluster:
                   minor:
                     passing: false
@@ -353,14 +353,14 @@ describe 'Update Deploy State', ->
             expect(@response.statusCode).to.equal 204, @body
 
           it 'should have set a ttl', (done) ->
-            keyName = 'governator:/somedir/my-governed-deploy:octoblu/my-governed-deploy:v1'
+            keyName = 'governator:/octoblu/my-service:octoblu/my-service:v1'
             @client.ttl keyName, (error, ttl) =>
               return done error if error?
               expect(ttl).to.be.greaterThan 0
               done()
 
           it 'should set the cancellation metadata', (done) ->
-            @client.hexists 'governator:/somedir/my-governed-deploy:octoblu/my-governed-deploy:v1', 'cancellation', (error, exists) =>
+            @client.hexists 'governator:/octoblu/my-service:octoblu/my-service:v1', 'cancellation', (error, exists) =>
               return done error if error?
               expect(exists).to.equal 1
               done()
@@ -368,8 +368,8 @@ describe 'Update Deploy State', ->
       describe 'when called with an existing cancellation', ->
         beforeEach (done) ->
           @deployService.cancel {
-            etcdDir: '/somedir/my-governed-deploy'
-            dockerUrl: 'octoblu/my-governed-deploy:v1'
+            etcdDir: '/octoblu/my-service'
+            dockerUrl: 'octoblu/my-service:v1'
           }, (error) =>
             done error
 
@@ -387,11 +387,11 @@ describe 'Update Deploy State', ->
               baseUrl: 'http://localhost:20000'
               auth: {username: 'governator-uuid', password: 'governator-token'}
               json:
-                repo: 'somedir'
-                owner: 'my-governed-deploy'
+                repo: 'my-service'
+                owner: 'octoblu'
                 build:
                   passing: true
-                  dockerUrl: 'octoblu/my-governed-deploy:v1'
+                  dockerUrl: 'octoblu/my-service:v1'
                 cluster:
                   minor:
                     passing: true
@@ -404,14 +404,14 @@ describe 'Update Deploy State', ->
             expect(@response.statusCode).to.equal 208, @body
 
           it 'should have set a ttl', (done) ->
-            keyName = 'governator:/somedir/my-governed-deploy:octoblu/my-governed-deploy:v1'
+            keyName = 'governator:/octoblu/my-service:octoblu/my-service:v1'
             @client.ttl keyName, (error, ttl) =>
               return done error if error?
               expect(ttl).to.be.greaterThan 0
               done()
 
           it 'should set the cancellation metadata', (done) ->
-            @client.hexists 'governator:/somedir/my-governed-deploy:octoblu/my-governed-deploy:v1', 'cancellation', (error, exists) =>
+            @client.hexists 'governator:/octoblu/my-service:octoblu/my-service:v1', 'cancellation', (error, exists) =>
               return done error if error?
               expect(exists).to.equal 1
               done()
@@ -467,11 +467,11 @@ describe 'Update Deploy State', ->
               baseUrl: 'http://localhost:20000'
               auth: {username: 'governator-uuid', password: 'governator-token'}
               json:
-                repo: 'somedir'
-                owner: 'my-governed-deploy'
+                repo: 'my-service'
+                owner: 'octoblu'
                 build:
                   passing: true
-                  dockerUrl: 'octoblu/my-governed-deploy:v1'
+                  dockerUrl: 'octoblu/my-service:v1'
                 cluster: {}
 
             request.put options, (error, @response, @body) =>
@@ -490,17 +490,17 @@ describe 'Update Deploy State', ->
               done()
 
           it 'should have set a ttl', (done) ->
-            keyName = 'governator:/somedir/my-governed-deploy:octoblu/my-governed-deploy:v1'
+            keyName = 'governator:/octoblu/my-service:octoblu/my-service:v1'
             @client.ttl keyName, (error, ttl) =>
               return done error if error?
               expect(ttl).to.be.greaterThan 0
               done()
 
           it 'should have metadata in the hash pointed to by the record in the sorted set', (done) ->
-            keyName = 'governator:/somedir/my-governed-deploy:octoblu/my-governed-deploy:v1'
+            keyName = 'governator:/octoblu/my-service:octoblu/my-service:v1'
             @client.hget keyName, 'request:metadata', (error, record) =>
               return done error if error?
               expect(JSON.parse record).to.deep.equal
-                etcdDir: '/somedir/my-governed-deploy'
-                dockerUrl: 'octoblu/my-governed-deploy:v1'
+                etcdDir: '/octoblu/my-service'
+                dockerUrl: 'octoblu/my-service:v1'
               done()

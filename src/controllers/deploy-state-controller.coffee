@@ -12,7 +12,7 @@ class DeployStateController
     return response.sendStatus(406) unless build?.passing
     return response.sendStatus(422) unless build?.dockerUrl?
     options = {
-      etcdDir: "/#{repo}/#{owner}",
+      etcdDir: "/#{owner}/#{repo}",
       dockerUrl: build.dockerUrl,
     }
     debug 'update options', options
