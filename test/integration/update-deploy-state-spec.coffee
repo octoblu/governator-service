@@ -120,8 +120,8 @@ describe 'Update Deploy State', ->
               return done error if error?
               done()
 
-          it 'should return a 204', ->
-            expect(@response.statusCode).to.equal 204, @body
+          it 'should return a 406', ->
+            expect(@response.statusCode).to.equal 406, @body
 
           it 'should add to the sorted set', (done) ->
             start = (Date.now() / 1000) - 5
@@ -154,8 +154,8 @@ describe 'Update Deploy State', ->
               return done error if error?
               done()
 
-          it 'should return a 204', ->
-            expect(@response.statusCode).to.equal 204, @body
+          it 'should return a 422', ->
+            expect(@response.statusCode).to.equal 422, @body
 
           it 'should add to the sorted set', (done) ->
             start = (Date.now() / 1000)
@@ -272,6 +272,7 @@ describe 'Update Deploy State', ->
                 build:
                   passing: true
                   dockerUrl: 'octoblu/my-governed-deploy:v1'
+                cluster: {}
 
             request.put options, (error, @response, @body) =>
               return done error if error?

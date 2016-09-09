@@ -9,8 +9,8 @@ class DeployStateController
   update: (request, response) =>
     { repo, owner, build, cluster } = request.body
     debug 'update', request.body
-    return response.sendStatus(204) unless build?.passing
-    return response.sendStatus(204) unless build?.dockerUrl?
+    return response.sendStatus(406) unless build?.passing
+    return response.sendStatus(422) unless build?.dockerUrl?
     options = {
       etcdDir: "/#{repo}/#{owner}",
       dockerUrl: build.dockerUrl,
