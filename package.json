@@ -1,6 +1,6 @@
 {
   "name": "governator-service",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "git@github.com:octoblu/governator-service.git",
   "main": "index.js",
   "scripts": {

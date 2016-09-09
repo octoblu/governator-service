@@ -14,12 +14,24 @@ class DeployStateController
     options = {
       etcdDir: "/#{repo}/#{owner}",
       dockerUrl: build.dockerUrl,
-      passing: @_isPassing(cluster)
     }
     debug 'update options', options
-    @deployService.upsert options, (error) =>
+    @deployService.exists options, (error, exists) =>
       return response.sendError error if error?
-      response.sendStatus 204
+      return @_handleCancel cluster, options, response if exists
+      @_handleCreate cluster, options, response
+
+  _handleCancel: (cluster, options, response) =>
+    return response.sendStatus(208) if @_isPassing cluster
+    @deployService.cancel options, (error) =>
+      return response.sendError error if error?
+      response.sendStatus(204)
+
+  _handleCreate: (cluster, options, response) =>
+    return response.sendStatus(204) unless @_isPassing cluster
+    @deployService.create options, (error) =>
+      return response.sendError error if error?
+      response.sendStatus(201)
 
   _isPassing: (cluster) =>
     return true if _.isEmpty @requiredClusters
@@ -28,6 +40,7 @@ class DeployStateController
     _.each @requiredClusters, (key) =>
       return unless passing
       debug 'cluster', { key, cluster: cluster?[key] }
+      return unless cluster?[key]?
       passing = false unless cluster?[key]?.passing
     return passing
 

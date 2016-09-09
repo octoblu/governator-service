@@ -7,6 +7,7 @@ class DeployService
     throw new Error('client is required') unless @client?
     throw new Error('deployDelay is required') unless @deployDelay?
     throw new Error('redisQueue is required') unless @redisQueue?
+    @TTL = 7 * 24 * 60 * 60 # 7 days
 
   cancel: ({ etcdDir, dockerUrl }, callback) =>
     debug 'cancellation', {etcdDir, dockerUrl}
@@ -14,7 +15,7 @@ class DeployService
     @client.hset metadataLocation, 'cancellation', Date.now(), (error) =>
       debug 'cancel hset', { error, metadataLocation }
       return callback error if error?
-      @client.expire metadataLocation, 24*60*60, callback
+      @client.expire metadataLocation, @TTL, callback
 
   create: ({ etcdDir, dockerUrl, metadata }, callback) =>
     debug 'create deployment', { etcdDir, dockerUrl }
@@ -27,7 +28,7 @@ class DeployService
       @client.hset metadataLocation, 'request:metadata', metadata, (error) =>
         debug 'create hset', { error, metadataLocation }
         return callback error if error?
-        @client.expire metadataLocation, 24*60*60, (error) =>
+        @client.expire metadataLocation, @TTL, (error) =>
           debug 'create expire', { error, metadataLocation }
           return callback error if error?
           @client.zadd @redisQueue, Math.floor(deployTime), metadataLocation, callback
@@ -40,15 +41,6 @@ class DeployService
       return callback error if error?
       return callback { code: 404 } unless exists
       @client.zadd @redisQueue, deployAt, metadataLocation, callback
-
-  upsert: ({ etcdDir, dockerUrl, passing }, callback) =>
-    metadataLocation = @_getMetadataLocation { etcdDir, dockerUrl }
-    @exists { etcdDir, dockerUrl }, (error, exists) =>
-      return callback error if error?
-      debug 'upsert exists', exists
-      return @cancel { etcdDir, dockerUrl }, callback if exists && !passing
-      return @create { etcdDir, dockerUrl }, callback unless exists
-      callback null
 
   getStatus: (callback) =>
     @client.zrange @redisQueue, 0, -1, (error, data) =>
