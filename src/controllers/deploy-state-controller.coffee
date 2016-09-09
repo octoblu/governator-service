@@ -22,6 +22,7 @@ class DeployStateController
       response.sendStatus 204
 
   _isPassing: (cluster) =>
+    return true if _.isEmpty @requiredClusters
     passing = true
     debug { @requiredClusters }
     _.each @requiredClusters, (key) =>
