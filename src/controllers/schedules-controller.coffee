@@ -9,8 +9,11 @@ class SchedulesController
       return response.status(422).send error: "Missing etcdDir or dockerUrl, received: '#{JSON.stringify request.body}'"
 
     metadata = JSON.stringify request.body
-    @deployService.schedule { etcdDir, dockerUrl, deployAt, metadata }, (error) =>
+    @deployService.exists { etcdDir, dockerUrl }, (error, exists) =>
       return response.sendError error if error?
-      response.sendStatus 201
+      return response.sendStatus 404 unless exists
+      @deployService.schedule { etcdDir, dockerUrl, deployAt, metadata }, (error) =>
+        return response.sendError error if error?
+        response.sendStatus 201
 
 module.exports = SchedulesController
