@@ -28,7 +28,6 @@ class DeployStateController
       response.sendStatus(204)
 
   _handleCreate: (cluster, options, response) =>
-    return response.sendStatus(204) unless @_isPassing cluster
     @deployService.create options, (error) =>
       return response.sendError error if error?
       response.sendStatus(201)

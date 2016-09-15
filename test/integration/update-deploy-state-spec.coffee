@@ -246,23 +246,8 @@ describe 'Update Deploy State', ->
               return done error if error?
               done()
 
-          it 'should return a 204', ->
-            expect(@response.statusCode).to.equal 204, @body
-
-          it 'should NOT be add to the sorted set', (done) ->
-            start = (Date.now() / 1000) - 5
-            end = start + 15
-            @client.zcount 'governator:deploys', start, end, (error, count) =>
-              return done error if error?
-              expect(count).to.equal 0
-              done()
-
-          it 'should have metadata in the hash pointed to by the record in the sorted set', (done) ->
-            keyName = 'governator:/octoblu/my-service:octoblu/my-service:v1'
-            @client.hget keyName, 'request:metadata', (error, record) =>
-              return done error if error?
-              expect(record).to.not.exist
-              done()
+          it 'should return a 201', ->
+            expect(@response.statusCode).to.equal 201, @body
 
       describe 'when called with an existing deployment', ->
         beforeEach (done) ->
@@ -353,19 +338,6 @@ describe 'Update Deploy State', ->
 
           it 'should return a 204', ->
             expect(@response.statusCode).to.equal 204, @body
-
-          it 'should have set a ttl', (done) ->
-            keyName = 'governator:/octoblu/my-service:octoblu/my-service:v1'
-            @client.ttl keyName, (error, ttl) =>
-              return done error if error?
-              expect(ttl).to.be.greaterThan 0
-              done()
-
-          it 'should set the cancellation metadata', (done) ->
-            @client.hexists 'governator:/octoblu/my-service:octoblu/my-service:v1', 'cancellation', (error, exists) =>
-              return done error if error?
-              expect(exists).to.equal 1
-              done()
 
       describe 'when called with an existing cancellation', ->
         beforeEach (done) ->
