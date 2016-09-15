@@ -31,6 +31,8 @@ describe 'Create Deploy', ->
       deployDelay: 1
       redisQueue: 'governator:deploys'
       requiredClusters: ['minor']
+      cluster: 'super'
+      deployStateUri: 'http://localhost'
     }
     @sut.run done
 

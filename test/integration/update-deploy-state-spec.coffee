@@ -35,6 +35,8 @@ describe 'Update Deploy State', ->
         deployDelay: 1
         redisQueue: redisQueue
         requiredClusters: ['minor']
+        cluster: 'super'
+        deployStateUri: 'http://localhost'
       }
       @deployService = new DeployService { client, redisQueue, deployDelay: 1 }
       @sut.run done
@@ -443,6 +445,8 @@ describe 'Update Deploy State', ->
         deployDelay: 1
         redisQueue: redisQueue
         requiredClusters: ''.split(',').map(_.trim)
+        cluster: 'super'
+        deployStateUri: 'http://localhost'
       }
       @deployService = new DeployService { client, redisQueue, deployDelay: 1 }
       @sut.run done

@@ -1,9 +1,11 @@
 _             = require 'lodash'
 colors        = require 'colors'
+Redis         = require 'ioredis'
 dashdash      = require 'dashdash'
 MeshbluConfig = require 'meshblu-config'
-Redis         = require 'ioredis'
+
 Server        = require './server'
+packageJSON   = require './package.json'
 
 class Command
   constructor: (@argv) ->
@@ -15,6 +17,11 @@ class Command
       help: 'Print this help and exit.'
     },
     {
+      names: ['version', 'v']
+      type: 'bool'
+      help: 'Print the version and exit.'
+    },
+    {
       names: ['port', 'p']
       type: 'integer'
       help: 'Port for the server to listen on'
@@ -22,11 +29,17 @@ class Command
       default: 80
     },
     {
-      names: ['required-clusters', 'c']
+      names: ['required-clusters']
       type: 'string'
       help: 'The required clusters in other to run. Separated by commas.'
       env: 'REQUIRED_CLUSTERS'
       default: 'minor'
+    },
+    {
+      names: ['cluster', 'c']
+      type: 'string',
+      help: 'The current cluster',
+      env: 'CLUSTER'
     },
     {
       names: ['redis-uri', 'r']
@@ -49,6 +62,12 @@ class Command
       env: 'DEPLOY_DELAY'
       default: 10 * 60
     },
+    {
+      names: ['deploy-state-uri']
+      type: 'string'
+      help: 'Deploy State URI. Should contain basic authentication.'
+      env: 'DEPLOY_STATE_URI'
+    },
   ]
 
   getOptions: =>
@@ -60,6 +79,9 @@ class Command
         usage: node command.js [OPTIONS]\n
         options:\n
         #{help}"""
+      process.exit 0
+    if options.version
+      console.log packageJSON.version
       process.exit 0
     return options
 
@@ -74,23 +96,33 @@ class Command
     process.exit 1
 
   run: =>
-    {port,required_clusters,redis_uri,redis_queue,deploy_delay} = @getOptions()
+    {
+      port,
+      required_clusters,
+      cluster,
+      redis_uri,
+      redis_queue,
+      deploy_delay,
+      deploy_state_uri,
+    } = @getOptions()
     meshbluConfig = @getMeshbluConfig()
 
     client = new Redis redis_uri, dropBufferSupport: true
     server = new Server {
       port,
       client,
+      cluster,
       meshbluConfig,
       requiredClusters: required_clusters.split(',').map(_.trim),
       deployDelay: deploy_delay,
       redisQueue: redis_queue,
+      deployStateUri: deploy_state_uri,
     }
     server.run (error) =>
       return @panic error if error?
 
       {address,port} = server.address()
-      console.log "Server listening on #{address}:#{port}"
+      console.log "Governator service listing on port #{port}"
 
     process.on 'SIGTERM', =>
       console.log 'SIGTERM caught, exiting'
@@ -99,6 +131,7 @@ class Command
 
       setTimeout =>
         console.log 'Server did not stop in time, exiting 0 manually'
+        server?.destroy()
         process.exit 0
       , 5000
 

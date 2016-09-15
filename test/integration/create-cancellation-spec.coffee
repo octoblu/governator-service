@@ -11,6 +11,10 @@ describe 'Create Cancellation', ->
     enableDestroy @meshbluServer
 
   beforeEach ->
+    @deployStateService = shmock 0xbabe
+    enableDestroy @deployStateService
+
+  beforeEach ->
     @redisKey = UUID.v1()
     @client = redis.createClient @redisKey
 
@@ -31,23 +35,32 @@ describe 'Create Cancellation', ->
       deployDelay: 0
       redisQueue: 'governator:deploys'
       requiredClusters: ['minor']
+      cluster: 'super'
+      deployStateUri: "http://hi:hello@localhost:#{0xbabe}"
     }
     @sut.run done
 
   afterEach ->
     @sut.destroy()
     @meshbluServer.destroy()
+    @deployStateService.destroy()
 
   describe 'POST /cancellations', ->
     describe 'when called with valid auth', ->
       describe 'when called with an existing deploy', ->
         beforeEach (done) ->
           governatorAuth = new Buffer('governator-uuid:governator-token').toString 'base64'
+          deployStateAuth = new Buffer('hi:hello').toString 'base64'
 
           @meshbluServer
             .get '/v2/whoami'
             .set 'Authorization', "Basic #{governatorAuth}"
             .reply 200, uuid: 'governator-uuid'
+
+          @notifyDeployState = @deployStateService
+            .put '/deployments/octoblu/a-deploy/v1/cluster/super/failed'
+            .set 'Authorization', "Basic #{deployStateAuth}"
+            .reply 204
 
           options =
             uri: '/cancellations'
@@ -74,6 +87,9 @@ describe 'Create Cancellation', ->
             return done error if error?
             expect(exists).to.equal 1
             done()
+
+        it 'should notify the deploy state service', ->
+          @notifyDeployState.done()
 
     describe 'when called with invalid auth', ->
       beforeEach (done) ->

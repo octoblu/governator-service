@@ -31,6 +31,8 @@ describe 'Get Status', ->
       deployDelay: 0
       redisQueue: 'governator:deploys'
       requiredClusters: ['minor']
+      cluster: 'super'
+      deployStateUri: 'http://localhost'
     }
     @sut.run done
 

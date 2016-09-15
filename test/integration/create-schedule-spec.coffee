@@ -33,6 +33,8 @@ describe 'Create Schedule', ->
       deployDelay: 1
       redisQueue: 'governator:deploys'
       requiredClusters: ['minor']
+      cluster: 'super'
+      deployStateUri: 'http://localhost'
       @logFn
     }
     @sut.run done
