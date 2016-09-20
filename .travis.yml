@@ -9,12 +9,8 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - g++-4.8
-  code_climate:
-    repo_token: d6528e52cb8b0f130bb67c28d5a4db20ea478faf3d8debc2d5121e8e8c9820bf
-before_script:
-- npm install -g codeclimate-test-reporter
-after_script:
-- codeclimate-test-reporter < coverage/lcov.info
+services:
+- redis
 deploy:
   provider: npm
   email: serveradmin@octoblu.com

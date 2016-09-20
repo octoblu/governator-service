@@ -2,19 +2,19 @@ _                  = require 'lodash'
 enableDestroy      = require 'server-destroy'
 octobluExpress     = require 'express-octoblu'
 meshbluAuthDevice  = require 'express-meshblu-auth-device'
-
-DeployService      = require './services/deploy-service'
+RedisPooledClient  = require 'express-redis-pooled-client'
 Router             = require './router'
 
 class Server
   constructor: (options) ->
     { @port, @logFn, @meshbluConfig, @disableLogging } = options
-    { @client, @deployDelay, @redisQueue,  } = options
-    { @requiredClusters, @octobluRaven } = options
-    { @cluster, @deployStateUri } = options
-    throw new Error('client is required') unless @client?
+    { @redisUri, @namespace, @maxConnections, @minConnections, @idleTimeoutMillis } = options
+    { @deployDelay, @octobluRaven } = options
+    { @requiredClusters, @cluster, @deployStateUri } = options
+    throw new Error('redisUri is required') unless @redisUri?
+    throw new Error('namespace is required') unless @namespace?
+    throw new Error('maxConnections is required') unless @maxConnections?
     throw new Error('deployDelay is required') unless @deployDelay?
-    throw new Error('redisQueue is required') unless @redisQueue?
     throw new Error('requiredClusters is required') unless @requiredClusters?
     throw new Error('deployStateUri is required') unless @deployStateUri?
     throw new Error('cluster is required') unless @cluster?
@@ -27,9 +27,16 @@ class Server
 
     app.use meshbluAuthDevice @meshbluConfig
 
-    deployService = new DeployService { @client, @deployDelay, @redisQueue }
+    redisPooledClient = new RedisPooledClient {
+      @redisUri,
+      @namespace,
+      @maxConnections,
+      @minConnections,
+    }
 
-    router = new Router { deployService, @requiredClusters, @deployStateUri, @cluster }
+    app.use redisPooledClient.middleware
+
+    router = new Router { @deployDelay, @requiredClusters, @deployStateUri, @cluster }
     router.route app
 
     @server = app.listen @port, callback

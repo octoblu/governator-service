@@ -1,6 +1,5 @@
 _             = require 'lodash'
 colors        = require 'colors'
-Redis         = require 'ioredis'
 dashdash      = require 'dashdash'
 MeshbluConfig = require 'meshblu-config'
 
@@ -33,30 +32,27 @@ class Command
       type: 'string'
       help: 'The required clusters in other to run. Separated by commas.'
       env: 'REQUIRED_CLUSTERS'
-      default: 'minor'
     },
     {
-      names: ['cluster', 'c']
+      names: ['cluster']
       type: 'string',
       help: 'The current cluster',
       env: 'CLUSTER'
     },
     {
-      names: ['redis-uri', 'r']
+      names: ['redis-uri']
       type: 'string'
-      help: 'Redis URI (default: redis://localhost:6379)'
+      help: 'Redis URI'
       env: 'REDIS_URI'
-      default: 'redis://localhost:6379'
     },
     {
-      names: ['redis-queue', 'q']
+      names: ['redis-queue']
       type: 'string'
-      help: 'Redis Queue (default: governator:request)'
+      help: 'Redis Queue'
       env: 'REDIS_QUEUE'
-      default: 'redis://localhost:6379'
     },
     {
-      names: ['deploy-delay', 'd']
+      names: ['deploy-delay']
       type: 'integer'
       help: 'Delay during which the deploy may be cancelled (in seconds)'
       env: 'DEPLOY_DELAY'
@@ -67,6 +63,27 @@ class Command
       type: 'string'
       help: 'Deploy State URI. Should contain basic authentication.'
       env: 'DEPLOY_STATE_URI'
+    },
+    {
+      names: ['max-connections']
+      type: 'integer'
+      help: 'Max number of redis connections'
+      env: 'MAX_CONNECTIONS',
+      default: 10
+    },
+    {
+      names: ['min-connections']
+      type: 'integer'
+      help: 'Min number of redis connections'
+      env: 'MIN_CONNECTIONS',
+      default: 1
+    },
+    {
+      names: ['idle-timeout']
+      type: 'integer'
+      help: 'Redis pool idle timeout in milliseconds'
+      env: 'IDLE_TIMEOUT_MILLIS',
+      default: 60000
     },
   ]
 
@@ -104,18 +121,23 @@ class Command
       redis_queue,
       deploy_delay,
       deploy_state_uri,
+      max_connections,
+      min_connections,
+      idle_timeout_millis,
     } = @getOptions()
     meshbluConfig = @getMeshbluConfig()
 
-    client = new Redis redis_uri, dropBufferSupport: true
     server = new Server {
       port,
-      client,
       cluster,
       meshbluConfig,
+      redisUri: redis_uri,
+      namespace: redis_queue,
+      maxConnections: max_connections,
+      minConnections: min_connections,
+      idleTimeoutMillis: idle_timeout_millis,
       requiredClusters: required_clusters.split(',').map(_.trim),
       deployDelay: deploy_delay,
-      redisQueue: redis_queue,
       deployStateUri: deploy_state_uri,
     }
     server.run (error) =>

@@ -1,9 +1,10 @@
 _             = require 'lodash'
 request       = require 'request'
 shmock        = require 'shmock'
-redis         = require 'fakeredis'
 enableDestroy = require 'server-destroy'
 UUID          = require 'uuid'
+RedisNs       = require '@octoblu/redis-ns'
+redis         = require 'ioredis'
 DeployService = require '../../src/services/deploy-service'
 Server        = require '../../server'
 
@@ -13,32 +14,29 @@ describe 'Update Deploy State', ->
       @meshbluServer = shmock 30000
       enableDestroy @meshbluServer
 
-    beforeEach ->
-      @redisKey = UUID.v1()
-      @client = redis.createClient @redisKey
-
     beforeEach (done) ->
+      @redisKey = UUID.v1()
       meshbluConfig =
         server: 'localhost'
         port: '30000'
         uuid: 'governator-uuid'
         token: 'governator-token'
 
-      client = redis.createClient @redisKey
-      redisQueue = 'governator:deploys'
+      @client = new RedisNs @redisKey, redis.createClient 'redis://localhost:6379', dropBufferSupport: true
 
       @sut = new Server {
         meshbluConfig: meshbluConfig
-        client: client
         port: 20000
         disableLogging: true
         deployDelay: 1
-        redisQueue: redisQueue
-        requiredClusters: ['minor']
+        redisUri: 'redis://localhost:6379'
+        namespace: @redisKey
+        maxConnections: 2,
         cluster: 'super'
+        requiredClusters: ['minor']
         deployStateUri: 'http://localhost'
       }
-      @deployService = new DeployService { client, redisQueue, deployDelay: 1 }
+      @deployService = new DeployService { @client, deployDelay: 1 }
       @sut.run done
 
     afterEach ->
@@ -395,32 +393,29 @@ describe 'Update Deploy State', ->
       @meshbluServer = shmock 30000
       enableDestroy @meshbluServer
 
-    beforeEach ->
-      @redisKey = UUID.v1()
-      @client = redis.createClient @redisKey
-
     beforeEach (done) ->
+      @redisKey = UUID.v1()
       meshbluConfig =
         server: 'localhost'
         port: '30000'
         uuid: 'governator-uuid'
         token: 'governator-token'
 
-      client = redis.createClient @redisKey
-      redisQueue = 'governator:deploys'
+      @client = new RedisNs @redisKey, redis.createClient 'redis://localhost:6379', dropBufferSupport: true
 
       @sut = new Server {
         meshbluConfig: meshbluConfig
-        client: client
         port: 20000
         disableLogging: true
         deployDelay: 1
-        redisQueue: redisQueue
+        redisUri: 'redis://localhost:6379'
+        namespace: @redisKey
+        maxConnections: 2,
         requiredClusters: ''.split(',').map(_.trim)
         cluster: 'super'
         deployStateUri: 'http://localhost'
       }
-      @deployService = new DeployService { client, redisQueue, deployDelay: 1 }
+      @deployService = new DeployService { @client, deployDelay: 1 }
       @sut.run done
 
     afterEach ->
@@ -443,11 +438,11 @@ describe 'Update Deploy State', ->
               baseUrl: 'http://localhost:20000'
               auth: {username: 'governator-uuid', password: 'governator-token'}
               json:
-                repo: 'my-service'
+                repo: 'my-service-2'
                 owner: 'octoblu'
                 build:
                   passing: true
-                  dockerUrl: 'octoblu/my-service:v1'
+                  dockerUrl: 'octoblu/my-service-2:v1'
                 cluster: {}
 
             request.put options, (error, @response, @body) =>
@@ -466,17 +461,17 @@ describe 'Update Deploy State', ->
               done()
 
           it 'should have set a ttl', (done) ->
-            keyName = 'governator:/octoblu/my-service:octoblu/my-service:v1'
+            keyName = 'governator:/octoblu/my-service-2:octoblu/my-service-2:v1'
             @client.ttl keyName, (error, ttl) =>
               return done error if error?
               expect(ttl).to.be.greaterThan 0
               done()
 
           it 'should have metadata in the hash pointed to by the record in the sorted set', (done) ->
-            keyName = 'governator:/octoblu/my-service:octoblu/my-service:v1'
+            keyName = 'governator:/octoblu/my-service-2:octoblu/my-service-2:v1'
             @client.hget keyName, 'request:metadata', (error, record) =>
               return done error if error?
               expect(JSON.parse record).to.deep.equal
-                etcdDir: '/octoblu/my-service'
-                dockerUrl: 'octoblu/my-service:v1'
+                etcdDir: '/octoblu/my-service-2'
+                dockerUrl: 'octoblu/my-service-2:v1'
               done()

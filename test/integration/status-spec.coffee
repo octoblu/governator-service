@@ -1,8 +1,9 @@
 request       = require 'request'
 shmock        = require 'shmock'
 enableDestroy = require 'server-destroy'
-redis         = require 'fakeredis'
 UUID          = require 'uuid'
+RedisNs       = require '@octoblu/redis-ns'
+redis         = require 'ioredis'
 Server        = require '../../server'
 
 describe 'Get Status', ->
@@ -10,26 +11,25 @@ describe 'Get Status', ->
     @meshbluServer = shmock 30000
     enableDestroy @meshbluServer
 
-  beforeEach ->
-    @redisKey = UUID.v1()
-    @client = redis.createClient @redisKey
-
   beforeEach (done) ->
+    @redisKey = UUID.v1()
     meshbluConfig =
       server: 'localhost'
       port: '30000'
       uuid: 'governator-uuid'
       token: 'governator-token'
 
-    client = redis.createClient @redisKey
+
+    @client = new RedisNs @redisKey, redis.createClient 'redis://localhost:6379', dropBufferSupport: true
 
     @sut = new Server {
-      client: client
       meshbluConfig: meshbluConfig
       port: 20000
       disableLogging: true
       deployDelay: 0
-      redisQueue: 'governator:deploys'
+      redisUri: 'redis://localhost:6379'
+      namespace: @redisKey
+      maxConnections: 2,
       requiredClusters: ['minor']
       cluster: 'super'
       deployStateUri: 'http://localhost'

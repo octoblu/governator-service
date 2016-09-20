@@ -1,15 +1,17 @@
-request = require 'request'
-debug   = require('debug')('governator-service:cancellation-controller')
+DeployService = require '../services/deploy-service'
+request       = require 'request'
+debug         = require('debug')('governator-service:cancellation-controller')
 
 class CancellationController
-  constructor: ({ @deployService, @deployStateUri, @cluster }) ->
-    throw new Error 'deployService is required' unless @deployService?
+  constructor: ({ @deployDelay, @deployStateUri, @cluster }) ->
+    throw new Error 'deployDelay is required' unless @deployDelay?
     throw new Error 'deployStateUri is required' unless @deployStateUri?
     throw new Error 'cluster is required' unless @cluster?
 
   create: (request, response) =>
     { etcdDir, dockerUrl } = request.body
-    @deployService.cancel { etcdDir, dockerUrl }, (error) =>
+    deployService = new DeployService({ client: request.redisClient, @deployDelay })
+    deployService.cancel { etcdDir, dockerUrl }, (error) =>
       return response.sendError error if error?
       @_notifyDeployStateService { dockerUrl }, (error) =>
         return response.sendError error if error?

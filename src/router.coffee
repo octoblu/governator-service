@@ -5,17 +5,17 @@ SchedulesController    = require './controllers/schedules-controller'
 StatusController       = require './controllers/status-controller'
 
 class Router
-  constructor: ({ deployService, requiredClusters, deployStateUri, cluster }) ->
-    throw new Error('deployService is required') unless deployService?
+  constructor: ({ requiredClusters, deployStateUri, cluster, deployDelay }) ->
     throw new Error('requiredClusters is required') unless requiredClusters?
     throw new Error('deployStateUri is required') unless deployStateUri?
     throw new Error('cluster is required') unless cluster?
+    throw new Error('deployDelay is required') unless deployDelay?
 
-    @deployStateController = new DeployStateController { deployService, requiredClusters }
-    @deploymentsController = new DeploymentsController { deployService }
-    @cancellationController = new CancellationController { deployService, deployStateUri, cluster }
-    @schedulesController = new SchedulesController  { deployService }
-    @statusController = new StatusController  { deployService }
+    @deployStateController = new DeployStateController { deployDelay, requiredClusters }
+    @deploymentsController = new DeploymentsController { deployDelay }
+    @cancellationController = new CancellationController { deployDelay, deployStateUri, cluster }
+    @schedulesController = new SchedulesController  { deployDelay }
+    @statusController = new StatusController  { deployDelay }
 
   route: (app) =>
     app.put  '/v2/deployments', @deployStateController.update

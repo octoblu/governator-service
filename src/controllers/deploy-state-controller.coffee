@@ -1,9 +1,10 @@
-_     = require 'lodash'
-debug = require('debug')('governator-service:deploy-state-controller')
+_             = require 'lodash'
+DeployService = require '../services/deploy-service'
+debug         = require('debug')('governator-service:deploy-state-controller')
 
 class DeployStateController
-  constructor: ({ @deployService, @requiredClusters }) ->
-    throw new Error 'deployService is required' unless @deployService?
+  constructor: ({ @deployDelay, @requiredClusters }) ->
+    throw new Error 'Missing deployDelay' unless @deployDelay?
     throw new Error 'requiredClusters is required' unless @requiredClusters?
 
   update: (request, response) =>
@@ -16,19 +17,20 @@ class DeployStateController
       dockerUrl: build.dockerUrl,
     }
     debug 'update options', options
-    @deployService.exists options, (error, exists) =>
+    deployService = new DeployService({ client: request.redisClient, @deployDelay })
+    deployService.exists options, (error, exists) =>
       return response.sendError error if error?
-      return @_handleCancel cluster, options, response if exists
-      @_handleCreate cluster, options, response
+      return @_handleCancel deployService, cluster, options, response if exists
+      @_handleCreate deployService, cluster, options, response
 
-  _handleCancel: (cluster, options, response) =>
+  _handleCancel: (deployService, cluster, options, response) =>
     return response.sendStatus(208) if @_isPassing cluster
-    @deployService.cancel options, (error) =>
+    deployService.cancel options, (error) =>
       return response.sendError error if error?
       response.sendStatus(204)
 
-  _handleCreate: (cluster, options, response) =>
-    @deployService.create options, (error) =>
+  _handleCreate: (deployService, cluster, options, response) =>
+    deployService.create options, (error) =>
       return response.sendError error if error?
       response.sendStatus(201)
 

@@ -1,7 +1,8 @@
 UUID          = require 'uuid'
 shmock        = require 'shmock'
 request       = require 'request'
-redis         = require 'fakeredis'
+RedisNs       = require '@octoblu/redis-ns'
+redis         = require 'ioredis'
 enableDestroy = require 'server-destroy'
 Server        = require '../../server'
 
@@ -10,28 +11,26 @@ describe 'Create Schedule', ->
     @meshbluServer = shmock 30000
     enableDestroy @meshbluServer
 
-  beforeEach ->
-    @redisKey = UUID.v1()
-    @client = redis.createClient @redisKey
-
   beforeEach (done) ->
+    @redisKey = UUID.v1()
     meshbluConfig =
       server: 'localhost'
       port: '30000'
       uuid: 'governator-uuid'
       token: 'governator-token'
 
-    client = redis.createClient @redisKey
+    @client = new RedisNs @redisKey, redis.createClient 'redis://localhost:6379', dropBufferSupport: true
 
     @logFn = sinon.spy()
 
     @sut = new Server {
       meshbluConfig: meshbluConfig
-      client: client
       port: 20000
       disableLogging: true
       deployDelay: 1
-      redisQueue: 'governator:deploys'
+      redisUri: 'redis://localhost:6379'
+      namespace: @redisKey
+      maxConnections: 2,
       requiredClusters: ['minor']
       cluster: 'super'
       deployStateUri: 'http://localhost'
@@ -76,7 +75,7 @@ describe 'Create Schedule', ->
         keyName = 'governator:/somedir/my-governed-deploy:octoblu/my-governed-deploy:v1'
         @client.zscore 'governator:deploys', keyName, (error, rank) =>
           return done error if error?
-          expect(rank).to.equal 550959
+          expect(rank).to.equal '550959'
           done()
 
     describe 'when does not exist', ->

@@ -1,6 +1,7 @@
 request       = require 'request'
 shmock        = require 'shmock'
-redis         = require 'fakeredis'
+RedisNs       = require '@octoblu/redis-ns'
+redis         = require 'ioredis'
 enableDestroy = require 'server-destroy'
 UUID          = require 'uuid'
 Server        = require '../../server'
@@ -14,26 +15,24 @@ describe 'Create Cancellation', ->
     @deployStateService = shmock 0xbabe
     enableDestroy @deployStateService
 
-  beforeEach ->
-    @redisKey = UUID.v1()
-    @client = redis.createClient @redisKey
-
   beforeEach (done) ->
+    @redisKey = UUID.v1()
     meshbluConfig =
       server: 'localhost'
       port: '30000'
       uuid: 'governator-uuid'
       token: 'governator-token'
 
-    client = redis.createClient @redisKey
+    @client = new RedisNs @redisKey, redis.createClient 'redis://localhost:6379', dropBufferSupport: true
 
     @sut = new Server {
-      client: client
       meshbluConfig: meshbluConfig
       port: 20000
       disableLogging: true
       deployDelay: 0
-      redisQueue: 'governator:deploys'
+      redisUri: 'redis://localhost:6379'
+      namespace: @redisKey
+      maxConnections: 2,
       requiredClusters: ['minor']
       cluster: 'super'
       deployStateUri: "http://hi:hello@localhost:#{0xbabe}"

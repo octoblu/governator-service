@@ -1,6 +1,8 @@
+DeployService = require '../services/deploy-service'
+
 class SchedulesController
-  constructor: ({ @deployService }) ->
-    throw new Error('deployService is required') unless @deployService?
+  constructor: ({ @deployDelay }) ->
+    throw new Error 'Missing deployDelay' unless @deployDelay?
 
   create: (request, response) =>
     { etcdDir, dockerUrl, deployAt } = request.body
@@ -8,11 +10,11 @@ class SchedulesController
     unless etcdDir && dockerUrl
       return response.status(422).send error: "Missing etcdDir or dockerUrl, received: '#{JSON.stringify request.body}'"
 
-    metadata = JSON.stringify request.body
-    @deployService.exists { etcdDir, dockerUrl }, (error, exists) =>
+    deployService = new DeployService({ client: request.redisClient, @deployDelay })
+    deployService.exists { etcdDir, dockerUrl }, (error, exists) =>
       return response.sendError error if error?
       return response.sendStatus 404 unless exists
-      @deployService.schedule { etcdDir, dockerUrl, deployAt, metadata }, (error) =>
+      deployService.schedule { etcdDir, dockerUrl, deployAt }, (error) =>
         return response.sendError error if error?
         response.sendStatus 201
 

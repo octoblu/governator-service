@@ -3,10 +3,9 @@ async = require 'async'
 debug = require('debug')('governator-service:deploy-service')
 
 class DeployService
-  constructor: ({ @client, @deployDelay, @redisQueue }) ->
+  constructor: ({ @client, @deployDelay }) ->
     throw new Error('client is required') unless @client?
     throw new Error('deployDelay is required') unless @deployDelay?
-    throw new Error('redisQueue is required') unless @redisQueue?
     @TTL = 7 * 24 * 60 * 60 # 7 days
 
   cancel: ({ etcdDir, dockerUrl }, callback) =>
@@ -31,19 +30,15 @@ class DeployService
         @client.expire metadataLocation, @TTL, (error) =>
           debug 'create expire', { error, metadataLocation }
           return callback error if error?
-          @client.zadd @redisQueue, Math.floor(deployTime), metadataLocation, callback
+          @client.zadd 'governator:deploys', Math.floor(deployTime), metadataLocation, callback
 
-  schedule: ({ etcdDir, dockerUrl, deployAt, metadata }, callback) =>
+  schedule: ({ etcdDir, dockerUrl, deployAt }, callback) =>
     debug 'schedule', { etcdDir, dockerUrl, deployAt }
-    metadata ?= JSON.stringify { etcdDir, dockerUrl, deployAt }
     metadataLocation = @_getMetadataLocation { etcdDir, dockerUrl }
-    @exists { etcdDir, dockerUrl }, (error, exists) =>
-      return callback error if error?
-      return callback { code: 404 } unless exists
-      @client.zadd @redisQueue, deployAt, metadataLocation, callback
+    @client.zadd 'governator:deploys', deployAt, metadataLocation, callback
 
   getStatus: (callback) =>
-    @client.zrange @redisQueue, 0, -1, (error, data) =>
+    @client.zrange 'governator:deploys', 0, -1, (error, data) =>
       return callback error if error?
       async.map data, @_getData, (error, loadedData) =>
         return callback error if error?
@@ -57,7 +52,7 @@ class DeployService
     return "governator:#{etcdDir}:#{dockerUrl}"
 
   _getData: (key, callback) =>
-    @client.zscore @redisQueue, key, (error, score) =>
+    @client.zscore 'governator:deploys', key, (error, score) =>
       return callback error if error?
 
       status = 'pending'
